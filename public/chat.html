@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #messages { border: 1px solid #000; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+    .message { margin: 5px 0; }
+  </style>
+</head>
+<body>
+
+  <h1>Mirë se vini, <span id="myName"></span>!</h1>
+  <p>ID yt: <span id="myId"></span></p>
+  <button onclick="logout()">Dalja</button>
+
+  <input type="text" id="friendId" placeholder="ID e mikut">
+  <button onclick="connectToFriend()">Lidhu</button>
+
+  <div id="chat" style="display:none;">
+    <h3>Chat</h3>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Mesazhi...">
+    <button onclick="sendMessage()">Dërgo</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const myId = localStorage.getItem('userId');
+    const myName = localStorage.getItem('userName');
+
+    if (!myId || !myName) {
+      window.location.href = '/login.html';
+    }
+
+    document.getElementById('myId').textContent = myId;
+    document.getElementById('myName').textContent = myName;
+    socket.emit('registerId', myId);
+
+    let connected = false;
+
+    function connectToFriend() {
+      const friendId = document.getElementById('friendId').value;
+      socket.emit('connectWithUser', { myId, friendId });
+    }
+
+    socket.on('connected', (data) => {
+      if (data.success) {
+        connected = true;
+        document.getElementById('chat').style.display = 'block';
+      } else {
+        alert(data.message);
+      }
+    });
+
+    function sendMessage() {
+      const message = document.getElementById('messageInput').value;
+      const friendId = document.getElementById('friendId').value;
+      if (message.trim() !== '') {
+        socket.emit('sendMessage', { friendId, message, senderId: myId });
+        document.getElementById('messageInput').value = '';
+      }
+    }
+
+    socket.on('receiveMessage', ({ message, senderName, senderId }) => {
+      const sender = senderId === myId ? 'Ti' : senderName;
+      addMessage(sender, message);
+    });
+
+    function addMessage(sender, message) {
+      const messagesDiv = document.getElementById('messages');
+      const newMessage = document.createElement('div');
+      newMessage.classList.add('message');
+      newMessage.innerHTML = `<b>${sender}:</b> ${message}`;
+      messagesDiv.appendChild(newMessage);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+  </script>
+</body>
+</html>

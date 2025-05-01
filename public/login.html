@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+</head>
+<body>
+  <h1>Kyçu</h1>
+  <input type="text" id="loginName" placeholder="Emri">
+  <input type="password" id="loginPassword" placeholder="Passwordi">
+  <button onclick="login()">Kyçu</button>
+  <p>S'ke llogari? <a href="/signup.html">Regjistrohu</a></p>
+
+  <script>
+    function login() {
+      const name = document.getElementById('loginName').value;
+      const password = document.getElementById('loginPassword').value;
+
+      fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.setItem('userId', data.user._id);
+          localStorage.setItem('userName', data.user.name);
+          window.location.href = "/chat.html";
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+
+    // Nëse është i kyçur, dërgo drejt e në chat
+    if (localStorage.getItem('userId')) {
+      window.location.href = "/chat.html";
+    }
+  </script>
+</body>
+</html>

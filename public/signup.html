@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup</title>
+</head>
+<body>
+  <h1>Regjistrohu</h1>
+  <input type="text" id="registerName" placeholder="Emri">
+  <input type="password" id="registerPassword" placeholder="Passwordi">
+  <button onclick="register()">Regjistrohu</button>
+  <p>Ke llogari? <a href="/login.html">Kyçu</a></p>
+
+  <script>
+    localStorage.clear(); // fshij userin në rast se vjen nga sesion i mëhershëm
+
+    function register() {
+      const name = document.getElementById('registerName').value;
+      const password = document.getElementById('registerPassword').value;
+
+      fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("U regjistrove me sukses!");
+          window.location.href = "/login.html";
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
